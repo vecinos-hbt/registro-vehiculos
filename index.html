@@ -21,7 +21,7 @@ th { background: #0078d7; color: white; }
 </head>
 <body>
 
-<h1>Registro de Vehículos Seguro</h1>
+<h1>Registro de Vehículos - Comunidad Hacienda Bahía Tongoy</h1>
 
 <!-- Login administrador -->
 <div class="adminLogin">
@@ -45,18 +45,45 @@ th { background: #0078d7; color: white; }
   <label>Marca:
     <select id="marca" required onchange="toggleOtro('marca')">
       <option value="">Seleccione marca...</option>
-      <option value="Toyota">Toyota</option>
-      <option value="Nissan">Nissan</option>
-      <option value="Hyundai">Hyundai</option>
+      <option value="Audi">Audi</option>
+      <option value="Baic">Baic</option>
+      <option value="BMW">BMW</option>
+      <option value="Brilliance">Brilliance</option>
+      <option value="Changan">Changan</option>
+      <option value="Chery">Chery</option>
       <option value="Chevrolet">Chevrolet</option>
-      <option value="Kia">Kia</option>
+      <option value="Citroen">Citroen</option>
+      <option value="Dodge">Dodge</option>
+      <option value="Fiat">Fiat</option>
       <option value="Ford">Ford</option>
-      <option value="Suzuki">Suzuki</option>
-      <option value="Volkswagen">Volkswagen</option>
+      <option value="Foton">Foton</option>
+      <option value="Geely">Geely</option>
+      <option value="Great Wall">Great Wall</option>
+      <option value="Haval">Haval</option>
       <option value="Honda">Honda</option>
+      <option value="Hyundai">Hyundai</option>
+      <option value="JAC">JAC</option>
+      <option value="Jeep">Jeep</option>
+      <option value="JMC">JMC</option>
+      <option value="Kia">Kia</option>
+      <option value="Land Rover">Land Rover</option>
+      <option value="Mahindra">Mahindra</option>
+      <option value="Maxus">Maxus</option>
+      <option value="Mazda">Mazda</option>
+      <option value="Mercedes Benz">Mercedes Benz</option>
+      <option value="MG">MG</option>
       <option value="Mitsubishi">Mitsubishi</option>
+      <option value="Nissan">Nissan</option>
+      <option value="Opel">Opel</option>
       <option value="Peugeot">Peugeot</option>
+      <option value="RAM">RAM</option>
       <option value="Renault">Renault</option>
+      <option value="Ssangyong">Ssangyong</option>
+      <option value="Subaru">Subaru</option>
+      <option value="Suzuki">Suzuki</option>
+      <option value="Toyota">Toyota</option>
+      <option value="Volkswagen">Volkswagen</option>
+      <option value="Volvo">Volvo</option>
       <option value="otro">Ingresar otro...</option>
     </select>
     <input type="text" id="marca_otro" placeholder="Escriba la marca" style="display:none; margin-top:5px;">
@@ -252,4 +279,5 @@ function eliminarVehiculo(patente){ if(confirm(`Eliminar ${patente}?`)) db.ref("
 </script>
 </body>
 </html>
+
 
