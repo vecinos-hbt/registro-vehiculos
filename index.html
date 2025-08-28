@@ -129,13 +129,12 @@ th { background: #0078d7; color: white; }
 <script>
 // Config Firebase (reemplaza con los de tu proyecto)
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROJECT.firebaseapp.com",
-  databaseURL: "TU_DATABASE_URL",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_PROJECT.appspot.com",
-  messagingSenderId: "TU_SENDER_ID",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyAGQWXlQUY4_yOuM0vpal2Z_gGZL3LUyNU",
+  authDomain: "registro-patentes-a3b2e.firebaseapp.com",
+  projectId: "registro-patentes-a3b2e",
+  storageBucket: "registro-patentes-a3b2e.firebasestorage.app",
+  messagingSenderId: "1081438190905",
+  appId: "1:1081438190905:web:813d8c37e644019184fce8"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -248,3 +247,4 @@ function eliminarVehiculo(patente){ if(confirm(`Eliminar ${patente}?`)) db.ref("
 </script>
 </body>
 </html>
+
