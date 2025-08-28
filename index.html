@@ -179,13 +179,13 @@ document.getElementById("registroForm").addEventListener("submit", e => {
   e.target.reset();
 });
 
-// Mostrar tabla con botones solo si admin
+// Mostrar tabla
 db.ref("vehiculos").on("value", snapshot => {
   tabla.innerHTML = "";
   snapshot.forEach(child => {
     const v = child.val();
     const fila = document.createElement("tr");
-    fila.className = v.estado==="pendiente"?"pendiente":"autorizado";
+    fila.className = v.estado==="pendiente" ? "pendiente" : "autorizado";
     fila.innerHTML = `
       <td>${v.dueno}</td>
       <td>${v.parcela}</td>
@@ -196,8 +196,10 @@ db.ref("vehiculos").on("value", snapshot => {
       <td>${v.uso}</td>
       <td>${v.estado}</td>
       <td>
-        ${esAdmin?`<button onclick="autorizarVehiculo('${child.key}')">Autorizar</button>
-        <button onclick="eliminarVehiculo('${child.key}')">Eliminar</button>`:""}
+        ${esAdmin ? `
+          <button onclick="autorizarVehiculo('${child.key}')">Autorizar</button>
+          <button onclick="eliminarVehiculo('${child.key}')">Eliminar</button>
+        ` : ""}
       </td>
     `;
     tabla.appendChild(fila);
@@ -220,25 +222,28 @@ function buscarVehiculo() {
 function loginAdmin() {
   const email = document.getElementById("adminEmail").value;
   const pass = document.getElementById("adminPass").value;
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(user => {
-      esAdmin = true;
-      document.getElementById("estadoAdmin").textContent="Admin activo ✅";
-      document.getElementById("btnLogout").style.display="inline-block";
-      db.ref("vehiculos").once("value", ()=>{}); // refrescar tabla
-    })
-    .catch(err => alert("Error: " + err.message));
+  auth.signInWithEmailAndPassword(email, pass).catch(err => alert("Error: " + err.message));
 }
 
 // Logout admin
 function logoutAdmin() {
-  auth.signOut().then(()=>{
+  auth.signOut();
+}
+
+// Escuchar estado de sesión (para mantener admin entre recargas)
+auth.onAuthStateChanged(user => {
+  if (user) {
+    esAdmin = true;
+    document.getElementById("estadoAdmin").textContent="Admin activo ✅";
+    document.getElementById("btnLogout").style.display="inline-block";
+  } else {
     esAdmin = false;
     document.getElementById("estadoAdmin").textContent="";
     document.getElementById("btnLogout").style.display="none";
-    db.ref("vehiculos").once("value", ()=>{}); // refrescar tabla
-  });
-}
+  }
+  // refrescar tabla cuando cambia el estado de auth
+  db.ref("vehiculos").once("value", ()=>{});
+});
 
 // Autorizar y eliminar
 function autorizarVehiculo(patente){ db.ref("vehiculos/"+patente+"/estado").set("autorizado"); }
@@ -247,4 +252,3 @@ function eliminarVehiculo(patente){ if(confirm(`Eliminar ${patente}?`)) db.ref("
 </script>
 </body>
 </html>
-
