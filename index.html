@@ -43,25 +43,22 @@ th { background: #0078d7; color: white; }
   <label>Patente vehículo:<input type="text" id="patente" required></label>
 
   <label>Marca:
-    <select id="marca" required onchange="cargarModelos()">
-      <option value="">Seleccione marca...</option>
-      <option value="otro">Ingresar otro...</option>
+    <select id="marca" required onchange="toggleOtro('marca')">
+      <option value="">Cargando marcas...</option>
     </select>
     <input type="text" id="marca_otro" placeholder="Escriba la marca" style="display:none; margin-top:5px;">
   </label>
 
   <label>Modelo:
     <select id="modelo" required onchange="toggleOtro('modelo')">
-      <option value="">Seleccione modelo...</option>
-      <option value="otro">Ingresar otro...</option>
+      <option value="">Cargando modelos...</option>
     </select>
     <input type="text" id="modelo_otro" placeholder="Escriba el modelo" style="display:none; margin-top:5px;">
   </label>
 
   <label>Color:
     <select id="color" required onchange="toggleOtro('color')">
-      <option value="">Seleccione color...</option>
-      <option value="otro">Ingresar otro...</option>
+      <option value="">Cargando colores...</option>
     </select>
     <input type="text" id="color_otro" placeholder="Escriba el color" style="display:none; margin-top:5px;">
   </label>
@@ -133,53 +130,26 @@ function toggleOtro(campo) {
   input.required = select.value === "otro";
 }
 
-// Cargar marcas y colores al inicio
-function cargarOpciones() {
-  const marcaSel = document.getElementById("marca");
-  marcaSel.innerHTML = '<option value="">Seleccione marca...</option><option value="otro">Ingresar otro...</option>';
-  db.ref("catalogo").once("value").then(snapshot => {
-    if(snapshot.exists()){
-      Object.keys(snapshot.val()).forEach(marca=>{
-        const opt=document.createElement("option");
-        opt.value=marca; opt.textContent=marca;
-        marcaSel.insertBefore(opt, marcaSel.querySelector('[value="otro"]'));
-      });
-    }
-  });
-
-  const colorSel=document.getElementById("color");
-  colorSel.innerHTML='<option value="">Seleccione color...</option><option value="otro">Ingresar otro...</option>';
-  db.ref("colores").once("value").then(snapshot=>{
-    if(snapshot.exists()){
-      snapshot.val().forEach(c=>{
-        const opt=document.createElement("option");
-        opt.value=c; opt.textContent=c;
-        colorSel.insertBefore(opt, colorSel.querySelector('[value="otro"]'));
-      });
-    }
-  });
-}
-cargarOpciones();
-
-// Cargar modelos cuando cambia la marca
-function cargarModelos() {
-  const marca = document.getElementById("marca").value;
-  const modeloSel = document.getElementById("modelo");
-  modeloSel.innerHTML = '<option value="">Seleccione modelo...</option><option value="otro">Ingresar otro...</option>';
-  document.getElementById("marca_otro").style.display = marca==="otro" ? "block":"none";
-
-  if(marca && marca!=="otro"){
-    db.ref("catalogo/"+marca).once("value").then(snapshot=>{
-      if(snapshot.exists()){
-        snapshot.val().forEach(m=>{
-          const opt=document.createElement("option");
-          opt.value=m; opt.textContent=m;
-          modeloSel.insertBefore(opt, modeloSel.querySelector('[value="otro"]'));
-        });
-      }
+// Cargar catálogo dinámico
+function cargarCatalogo(ruta, selectId) {
+  const select = document.getElementById(selectId);
+  db.ref("catalogo/" + ruta).once("value").then(snapshot => {
+    select.innerHTML = '<option value="">Seleccione ' + ruta + '...</option>';
+    snapshot.forEach(child => {
+      const opt = document.createElement("option");
+      opt.value = child.key;
+      opt.textContent = child.key;
+      select.appendChild(opt);
     });
-  }
+    const optOtro = document.createElement("option");
+    optOtro.value = "otro";
+    optOtro.textContent = "Ingresar otro...";
+    select.appendChild(optOtro);
+  });
 }
+cargarCatalogo("marcas", "marca");
+cargarCatalogo("modelos", "modelo");
+cargarCatalogo("colores", "color");
 
 // Guardar vehículo
 document.getElementById("registroForm").addEventListener("submit", e => {
@@ -203,37 +173,19 @@ document.getElementById("registroForm").addEventListener("submit", e => {
     estado: "pendiente"
   });
 
-  // Guardar marca nueva
-  if(document.getElementById("marca").value==="otro"){
-    db.ref("catalogo/"+marca).set([]);
-  }
-  // Guardar modelo nuevo
-  if(document.getElementById("modelo").value==="otro"){
-    db.ref("catalogo/"+marca).once("value").then(snapshot=>{
-      let modelos=snapshot.val()||[];
-      if(!modelos.includes(modelo)){
-        modelos.push(modelo);
-        db.ref("catalogo/"+marca).set(modelos);
-      }
-    });
-  }
-  // Guardar color nuevo
-  if(document.getElementById("color").value==="otro"){
-    db.ref("colores").once("value").then(snapshot=>{
-      let colores=snapshot.val()||[];
-      if(!colores.includes(color)){
-        colores.push(color);
-        db.ref("colores").set(colores);
-      }
-    });
-  }
+  // guardar en catálogo si es nuevo
+  if (marca) db.ref("catalogo/marcas/" + marca).set(true);
+  if (modelo) db.ref("catalogo/modelos/" + modelo).set(true);
+  if (color) db.ref("catalogo/colores/" + color).set(true);
 
   e.target.reset();
-  cargarOpciones();
+  cargarCatalogo("marcas", "marca");
+  cargarCatalogo("modelos", "modelo");
+  cargarCatalogo("colores", "color");
 });
 
-// Renderizar tabla
-function renderTabla(snapshot){
+// Mostrar tabla
+db.ref("vehiculos").on("value", snapshot => {
   tabla.innerHTML = "";
   snapshot.forEach(child => {
     const v = child.val();
@@ -257,10 +209,7 @@ function renderTabla(snapshot){
     `;
     tabla.appendChild(fila);
   });
-}
-
-// Escuchar cambios en vehículos
-db.ref("vehiculos").on("value", snapshot => renderTabla(snapshot));
+});
 
 // Buscar vehículo
 function buscarVehiculo() {
@@ -286,12 +235,18 @@ function logoutAdmin() {
   auth.signOut();
 }
 
-// Escuchar estado de sesión admin
+// Escuchar estado de sesión
 auth.onAuthStateChanged(user => {
-  esAdmin = !!user;
-  document.getElementById("estadoAdmin").textContent = user ? "Admin activo ✅" : "";
-  document.getElementById("btnLogout").style.display = user ? "inline-block" : "none";
-  db.ref("vehiculos").once("value", snapshot=>renderTabla(snapshot));
+  if (user) {
+    esAdmin = true;
+    document.getElementById("estadoAdmin").textContent="Admin activo ✅";
+    document.getElementById("btnLogout").style.display="inline-block";
+  } else {
+    esAdmin = false;
+    document.getElementById("estadoAdmin").textContent="";
+    document.getElementById("btnLogout").style.display="none";
+  }
+  db.ref("vehiculos").once("value", ()=>{});
 });
 
 // Autorizar y eliminar
